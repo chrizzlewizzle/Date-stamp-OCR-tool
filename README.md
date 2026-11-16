@@ -23,7 +23,7 @@ Tool to read orange/red analog date stamps burned into scanned family photos (19
    - Verify: `exiftool -ver`
    - If missing, the tool should print clear instructions instead of failing with a traceback (to be enforced in apply implementation).
 
-## CLI (planned)
+## CLI (planned / in progress)
 Run commands via `uv` (no manual venv activation required):
 ```powershell
 uv run datestamp calibrate <photo_dir>       # re-measure colour/geometry, rewrite calibration.json
@@ -33,7 +33,19 @@ uv run datestamp apply     <photo_dir> --results results/ [--apply] [--also-file
 ```
 A convenience entrypoint is also available: `uv run python datestamp.py --help`.
 
-Current scaffold behavior: commands parse and run placeholder handlers; `scan` will auto-run `calibrate`/`glyphs` when outputs are missing once implemented.
+Current status:
+- `calibrate`: implemented (writes `calibration.json`)
+- `glyphs`: placeholder (Milestone 3)
+- `scan`: scaffold (pipeline not yet wired; auto-runs missing calibration/glyph steps when implemented)
+- `apply`: placeholder (Milestone 8)
+
+### Detection evaluation (Milestone 2 utility)
+A detection evaluation harness is available for development/validation:
+```powershell
+uv run python -m datestamp.detect samples --no-fallback
+# optional: --debug-dir results/debug-detect --limit N --model-path models/yolo-date-stamp-detector.onnx
+```
+This reports per-image found/not-found, method/corner/confidence/bbox, and checks `samples/ground_truth.csv` `no_stamp` cases. Runtime remains offline.
 
 ## Project structure (target)
 - `pyproject.toml`: project metadata, dependencies, and `datestamp` console script (managed with `uv`)
@@ -58,5 +70,13 @@ Current scaffold behavior: commands parse and run placeholder handlers; `scan` w
 - **2026-xx Milestone 0 (scaffold):** Established package/CLI skeleton, shared data contracts (`config.py`), Windows-safe I/O helpers (`io_utils.py`), pinned baseline dependencies, and placeholder stage modules. No OCR/calibration/glyph/EXIF logic implemented yet.
 - **2026-xx Tooling update:** Re-architected project to use **uv** for environment/dependency management and command execution (`pyproject.toml`, `uv sync`, `uv run datestamp ...`, `uv run pytest`). Legacy `requirements.txt` removed in favor of `pyproject.toml` as the source of truth.
 - **2026-xx Milestone 1 (calibration):** Implemented `datestamp calibrate` to measure samples via HSV red/orange masking across four corner regions and connected-component heuristics, writing inspectable `calibration.json` (re-runnable). Measured from 20 sample images: 600 DPI median, no EXIF orientation tags observed, stamp candidates detected in all four corners (counts bottom_right=7, bottom_left=6, top_left=4, top_right=3), HSV ranges approx `[0-34]` and `[156-179]` with `s/v >= ~73`, median bbox fraction recorded, and font hints indicating likely solid strokes on average while notes flag multi-camera/font variability (incl. seven-segment cases seen in samples). Values are initial defaults for later detection refinement.
+- **2026-xx Milestone 2 (detection):** Implemented Stage 1 in `datestamp/detect.py`: primary HSV mask + geometry detector (calibration-driven HSV ranges, morphology, all four corner search with widened regions, connected-component row-plausibility heuristics, padded crop/bbox output) and a pluggable fallback interface with `OnnxYoloStampDetector` (CPU ONNX Runtime) for `pike00/yolo-date-stamp-detector`. Fallback is attempted on HSV miss/weak or implausible results when a local model is available. Added detection evaluation harness (`uv run python -m datestamp.detect ...`) with per-image report and GT `no_stamp` checking. Current sample eval (HSV-only, no model): **19 found / 1 not found**, and **1/1 ground-truth `no_stamp` correctly not detected** (`16.png` rejected as low-confidence/non-plausible). Bboxes are currently coarse corner-region crops (good for localization; segmentation will refine) and confidence scoring is provisional pending later stages.
 - **Open (from samples/spec):** `samples/ground_truth.csv` contains variable-length `digits` values while spec references six characters; normalization/alignment for scoring and parsing must be defined during implementation and recorded here. Date formats and fonts vary across samples (including seven-segment examples); calibration/glyph/bootstrap strategies must remain inspectable and handle this variability.
-- **Open:** ONNX detector model acquisition/export is a setup-time activity (runtime must remain offline); exact steps to be documented when fallback is implemented.
+- **Open:** ONNX detector model acquisition/export is a setup-time activity (runtime must remain offline). Fallback expects a local ONNX model (default path `models/yolo-date-stamp-detector.onnx`). Exact download/export steps are not automated in-runtime; obtain/export the Hugging Face model to ONNX once during setup and place it at that path (or pass `--model-path` to detection eval) when fallback is needed.
+
+## ONNX fallback detector setup (Stage 1, optional)
+- **Model:** `pike00/yolo-date-stamp-detector` (YOLO, fine-tuned for orange/red date stamps)
+- **Runtime:** ONNX Runtime (CPU), no network calls at runtime
+- **Default local path:** `models/yolo-date-stamp-detector.onnx`
+- **Setup-time (manual/offline-after-download):** download model artifacts and export to ONNX once (e.g. via Ultralytics export on a machine with the model available), then copy the resulting `.onnx` file into `models/` (create the directory if needed). Keep this as a one-time setup step; do not perform network calls during tool execution.
+- **Behavior:** if the model file is missing/unloadable, the tool continues with HSV+geometry detection and reports fallback unavailable in evaluation; if present, fallback is used on HSV misses/weak detections and an empty detection is treated as "no stamp".
