@@ -1,0 +1,498 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-16T22:11:45.795242+00:00",
+  "photo_dir": "samples",
+  "measurement_method": {
+    "description": "HSV red/orange thresholding in four corner regions with connected-component row heuristics.",
+    "corner_region_fraction": {
+      "x": 0.35,
+      "y": 0.35
+    },
+    "base_thresholds": {
+      "hue": [
+        [
+          0,
+          35
+        ],
+        [
+          160,
+          179
+        ]
+      ],
+      "s_min": 80,
+      "v_min": 80
+    },
+    "morphology": {
+      "open_kernel": [
+        3,
+        3
+      ],
+      "close_kernel": [
+        3,
+        3
+      ],
+      "close_iterations": 2
+    }
+  },
+  "image_stats": {
+    "num_images_measured": 20,
+    "num_images_with_stamp_candidate": 20,
+    "dimensions": {
+      "width": {
+        "min": 1799,
+        "max": 3496,
+        "median": 3379.5
+      },
+      "height": {
+        "min": 1199,
+        "max": 3527,
+        "median": 2339.5
+      }
+    },
+    "dpi": {
+      "x_median": 599.9988,
+      "y_median": 599.9988,
+      "unique_approx": [
+        [
+          300.0,
+          300.0
+        ],
+        [
+          600.0,
+          600.0
+        ]
+      ]
+    },
+    "exif_orientation_tags": {
+      "none": 20
+    }
+  },
+  "hsv_ranges": [
+    {
+      "h_min": 0,
+      "h_max": 34,
+      "s_min": 73,
+      "s_max": 255,
+      "v_min": 74,
+      "v_max": 255
+    },
+    {
+      "h_min": 156,
+      "h_max": 179,
+      "s_min": 73,
+      "s_max": 255,
+      "v_min": 74,
+      "v_max": 255
+    }
+  ],
+  "corner_regions": [
+    {
+      "name": "bottom_right",
+      "enabled": true,
+      "x_frac": 0.35,
+      "y_frac": 0.35,
+      "priority": 1
+    },
+    {
+      "name": "bottom_left",
+      "enabled": true,
+      "x_frac": 0.35,
+      "y_frac": 0.35,
+      "priority": 2
+    },
+    {
+      "name": "top_left",
+      "enabled": true,
+      "x_frac": 0.35,
+      "y_frac": 0.35,
+      "priority": 3
+    },
+    {
+      "name": "top_right",
+      "enabled": true,
+      "x_frac": 0.35,
+      "y_frac": 0.35,
+      "priority": 4
+    }
+  ],
+  "stamp_geometry": {
+    "bbox_fraction_median": {
+      "x": 0.40783772632844384,
+      "y": 0.6500178068210298,
+      "w": 0.34308808607787594,
+      "h": 0.33722004621195156
+    },
+    "stamp_corner_counts": {
+      "bottom_left": 6,
+      "top_left": 4,
+      "bottom_right": 7,
+      "top_right": 3
+    },
+    "expected_digit_row": {
+      "orientation": "horizontal",
+      "typical_digit_count_guess": 6,
+      "note": "Ground truth shows variable-length digit strings; segmentation must be flexible."
+    }
+  },
+  "font_hints": {
+    "avg_thin_component_ratio": 0.1284364077662688,
+    "likely_styles": [
+      "possible_solid_strokes"
+    ],
+    "note": "Heuristic from calibration masks; confirm during glyph inspection (samples may contain multiple camera fonts)."
+  },
+  "orientation": {
+    "check_all_four_corners": true,
+    "exif_orientation_observed": {
+      "none": 20
+    },
+    "note": "No EXIF orientation tags observed in sampled files; detector should still check all four corners for rotated scans."
+  },
+  "per_image": [
+    {
+      "filename": "1.png",
+      "width": 3432,
+      "height": 2207,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_left",
+      "best_bbox_frac": {
+        "x": 0.0,
+        "y": 0.6502038966923426,
+        "w": 0.34994172494172493,
+        "h": 0.3497961033076575
+      }
+    },
+    {
+      "filename": "10.png",
+      "width": 3304,
+      "height": 2327,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_left",
+      "best_bbox_frac": {
+        "x": 0.0,
+        "y": 0.6605070906746885,
+        "w": 0.3498789346246973,
+        "h": 0.33949290932531156
+      }
+    },
+    {
+      "filename": "11.png",
+      "width": 2183,
+      "height": 3415,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_left",
+      "best_bbox_frac": {
+        "x": 0.03664681630783326,
+        "y": 0.6562225475841874,
+        "w": 0.31333027943197433,
+        "h": 0.3335285505124451
+      }
+    },
+    {
+      "filename": "12.png",
+      "width": 2344,
+      "height": 3463,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "top_left",
+      "best_bbox_frac": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 0.34982935153583616,
+        "h": 0.32024256425064973
+      }
+    },
+    {
+      "filename": "13.png",
+      "width": 3472,
+      "height": 2311,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6500576036866359,
+        "y": 0.6932064041540459,
+        "w": 0.33640552995391704,
+        "h": 0.3067935958459541
+      }
+    },
+    {
+      "filename": "14.png",
+      "width": 3423,
+      "height": 2200,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_left",
+      "best_bbox_frac": {
+        "x": 0.0,
+        "y": 0.65,
+        "w": 0.3499853929301782,
+        "h": 0.35
+      }
+    },
+    {
+      "filename": "15.png",
+      "width": 3415,
+      "height": 2343,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6995607613469985,
+        "y": 0.6500213401621853,
+        "w": 0.28316251830161054,
+        "h": 0.3499786598378148
+      }
+    },
+    {
+      "filename": "16.png",
+      "width": 1799,
+      "height": 1199,
+      "orientation": null,
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "best_corner": "top_left",
+      "best_bbox_frac": {
+        "x": 0.045580878265703166,
+        "y": 0.041701417848206836,
+        "w": 0.20733740967204004,
+        "h": 0.17764804003336113
+      }
+    },
+    {
+      "filename": "17.png",
+      "width": 3464,
+      "height": 2352,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "top_right",
+      "best_bbox_frac": {
+        "x": 0.6501154734411085,
+        "y": 0.0,
+        "w": 0.34988452655889146,
+        "h": 0.3482142857142857
+      }
+    },
+    {
+      "filename": "18.png",
+      "width": 3496,
+      "height": 2352,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_left",
+      "best_bbox_frac": {
+        "x": 0.16561784897025172,
+        "y": 0.6500850340136054,
+        "w": 0.18421052631578946,
+        "h": 0.33163265306122447
+      }
+    },
+    {
+      "filename": "19.png",
+      "width": 3463,
+      "height": 2327,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "top_left",
+      "best_bbox_frac": {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 0.34998556165174705,
+        "h": 0.3498066179630425
+      }
+    },
+    {
+      "filename": "2.png",
+      "width": 3319,
+      "height": 2272,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "top_right",
+      "best_bbox_frac": {
+        "x": 0.6501958421211208,
+        "y": 0.014964788732394365,
+        "w": 0.3498041578788792,
+        "h": 0.33494718309859156
+      }
+    },
+    {
+      "filename": "20.png",
+      "width": 3472,
+      "height": 2360,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_left",
+      "best_bbox_frac": {
+        "x": 0.01728110599078341,
+        "y": 0.65,
+        "w": 0.3326612903225806,
+        "h": 0.24322033898305084
+      }
+    },
+    {
+      "filename": "3.png",
+      "width": 3008,
+      "height": 1999,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6502659574468085,
+        "y": 0.6503251625812907,
+        "w": 0.32845744680851063,
+        "h": 0.34967483741870936
+      }
+    },
+    {
+      "filename": "4.png",
+      "width": 3311,
+      "height": 2351,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6750226517668378,
+        "y": 0.6503615482773288,
+        "w": 0.3249773482331622,
+        "h": 0.27009783071033605
+      }
+    },
+    {
+      "filename": "5.png",
+      "width": 3344,
+      "height": 2336,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6501196172248804,
+        "y": 0.6502568493150684,
+        "w": 0.1617822966507177,
+        "h": 0.3497431506849315
+      }
+    },
+    {
+      "filename": "6.png",
+      "width": 2288,
+      "height": 3527,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6503496503496503,
+        "y": 0.6759285511766374,
+        "w": 0.2395104895104895,
+        "h": 0.26424723561100083
+      }
+    },
+    {
+      "filename": "7.png",
+      "width": 2255,
+      "height": 3503,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "bottom_right",
+      "best_bbox_frac": {
+        "x": 0.6501108647450111,
+        "y": 0.6500142734798744,
+        "w": 0.34988913525498894,
+        "h": 0.3499857265201256
+      }
+    },
+    {
+      "filename": "8.png",
+      "width": 3488,
+      "height": 2272,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "top_right",
+      "best_bbox_frac": {
+        "x": 0.6502293577981652,
+        "y": 0.0,
+        "w": 0.34977064220183485,
+        "h": 0.34991197183098594
+      }
+    },
+    {
+      "filename": "9.png",
+      "width": 3472,
+      "height": 2344,
+      "orientation": null,
+      "dpi": [
+        599.9988,
+        599.9988
+      ],
+      "best_corner": "top_left",
+      "best_bbox_frac": {
+        "x": 0.0,
+        "y": 0.02687713310580205,
+        "w": 0.34994239631336405,
+        "h": 0.32295221843003413
+      }
+    }
+  ],
+  "notes": [
+    "Measured from actual images using HSV red/orange masking in four corner regions.",
+    "HSV ranges and geometry are initial calibrated defaults; refine if detection misses stamps.",
+    "Samples may include multiple cameras/fonts and variable contrast; inspect glyphs/ and review outputs during later stages."
+  ]
+}
