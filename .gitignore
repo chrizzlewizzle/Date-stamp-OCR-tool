@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# uv (local cache); uv.lock should be committed when generated
+.uv/
+
+# Test/coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Tool outputs (runtime artifacts)
+/results/
+**/results/
+/cache/
+**/cache/
+*.log
+
+# Local temp/debug artifacts
+/debug/
+/tmp/
+
+# Samples (local input data; not committed)
+samples/
+
+# NOTE: calibration.json and glyphs/ are intended to be committed when generated.
