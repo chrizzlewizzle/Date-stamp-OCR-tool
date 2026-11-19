@@ -1,0 +1,1688 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-19T20:59:47.532643+00:00",
+  "photo_dir": "samples",
+  "summary": {
+    "num_images_scanned": 20,
+    "num_crops": 68,
+    "num_clusters": 12,
+    "num_unlabeled_clusters": 0,
+    "digits_present": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ],
+    "digits_missing": [],
+    "exact_aligned_images": 6,
+    "mismatch_aligned_images": 13,
+    "detected_images": 19
+  },
+  "sanity_warnings": [
+    "20.png: 6-digit exact alignment gives day tens '8' (expected 0-3)"
+  ],
+  "unlabeled_clusters": [],
+  "per_image": [
+    {
+      "filename": "1.png",
+      "detected": true,
+      "corner": "bottom_left",
+      "bbox": [
+        0,
+        1142,
+        1601,
+        1065
+      ],
+      "segmented_digits": 5,
+      "gt_digits": "99716",
+      "alignment": "exact",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 5 components"
+      ]
+    },
+    {
+      "filename": "10.png",
+      "detected": true,
+      "corner": "bottom_left",
+      "bbox": [
+        0,
+        1204,
+        1541,
+        1123
+      ],
+      "segmented_digits": 5,
+      "gt_digits": "83810",
+      "alignment": "exact",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 5 components"
+      ]
+    },
+    {
+      "filename": "11.png",
+      "detected": true,
+      "corner": "bottom_left",
+      "bbox": [
+        0,
+        1823,
+        1018,
+        1592
+      ],
+      "segmented_digits": 3,
+      "gt_digits": "83214",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 3 components",
+        "digit component count 3 differs from hint 5"
+      ]
+    },
+    {
+      "filename": "12.png",
+      "detected": true,
+      "corner": "top_left",
+      "bbox": [
+        0,
+        0,
+        1060,
+        1849
+      ],
+      "segmented_digits": 4,
+      "gt_digits": "821224",
+      "alignment": "mismatch",
+      "notes": [
+        "digit component count 4 differs from hint 6",
+        "segmented 4 digit components"
+      ]
+    },
+    {
+      "filename": "13.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        1966,
+        1201,
+        1506,
+        1110
+      ],
+      "segmented_digits": 5,
+      "gt_digits": "821224",
+      "alignment": "mismatch",
+      "notes": [
+        "digit component count 5 differs from hint 6",
+        "segmented 5 digit components"
+      ]
+    },
+    {
+      "filename": "14.png",
+      "detected": true,
+      "corner": "bottom_left",
+      "bbox": [
+        0,
+        1138,
+        1597,
+        1062
+      ],
+      "segmented_digits": 4,
+      "gt_digits": "83219",
+      "alignment": "mismatch",
+      "notes": [
+        "digit component count 4 differs from hint 5",
+        "segmented 4 digit components"
+      ]
+    },
+    {
+      "filename": "15.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        2070,
+        1212,
+        1345,
+        1131
+      ],
+      "segmented_digits": 2,
+      "gt_digits": "83218",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 2 components",
+        "digit component count 2 differs from hint 5"
+      ]
+    },
+    {
+      "filename": "16.png",
+      "detected": false,
+      "gt_digits": "",
+      "gt_status": "no stamp in the picture",
+      "notes": [
+        "HSV candidate rejected as low-confidence",
+        "components=4",
+        "pixels=743",
+        "row_like=True"
+      ]
+    },
+    {
+      "filename": "17.png",
+      "detected": true,
+      "corner": "top_right",
+      "bbox": [
+        1959,
+        0,
+        1505,
+        1318
+      ],
+      "segmented_digits": 4,
+      "gt_digits": "11290",
+      "alignment": "mismatch",
+      "notes": [
+        "digit component count 4 differs from hint 5",
+        "segmented 4 digit components"
+      ]
+    },
+    {
+      "filename": "18.png",
+      "detected": true,
+      "corner": "bottom_left",
+      "bbox": [
+        466,
+        1217,
+        1010,
+        1135
+      ],
+      "segmented_digits": 3,
+      "gt_digits": "9061",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 3 components",
+        "digit component count 3 differs from hint 4"
+      ]
+    },
+    {
+      "filename": "19.png",
+      "detected": true,
+      "corner": "top_left",
+      "bbox": [
+        0,
+        0,
+        1615,
+        1310
+      ],
+      "segmented_digits": 1,
+      "gt_digits": "61090",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 1 components",
+        "digit component count 1 differs from hint 5"
+      ]
+    },
+    {
+      "filename": "2.png",
+      "detected": true,
+      "corner": "top_right",
+      "bbox": [
+        1878,
+        0,
+        1441,
+        1222
+      ],
+      "segmented_digits": 2,
+      "gt_digits": "4599",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 2 components",
+        "digit component count 2 differs from hint 4"
+      ]
+    },
+    {
+      "filename": "20.png",
+      "detected": true,
+      "corner": "bottom_left",
+      "bbox": [
+        0,
+        1268,
+        1619,
+        1001
+      ],
+      "segmented_digits": 6,
+      "gt_digits": "171288",
+      "alignment": "exact",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 6 components"
+      ]
+    },
+    {
+      "filename": "3.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        1721,
+        1035,
+        1287,
+        964
+      ],
+      "segmented_digits": 3,
+      "gt_digits": "82318",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 3 components",
+        "digit component count 3 differs from hint 5"
+      ]
+    },
+    {
+      "filename": "4.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        1873,
+        1216,
+        1438,
+        1135
+      ],
+      "segmented_digits": 2,
+      "gt_digits": "8249",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 2 components",
+        "digit component count 2 differs from hint 4"
+      ]
+    },
+    {
+      "filename": "5.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        1912,
+        1208,
+        1269,
+        1128
+      ],
+      "segmented_digits": 6,
+      "gt_digits": "821224",
+      "alignment": "exact",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 6 components"
+      ]
+    },
+    {
+      "filename": "6.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        1315,
+        1867,
+        775,
+        1660
+      ],
+      "segmented_digits": 3,
+      "gt_digits": "86325",
+      "alignment": "mismatch",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 3 components",
+        "digit component count 3 differs from hint 5"
+      ]
+    },
+    {
+      "filename": "7.png",
+      "detected": true,
+      "corner": "bottom_right",
+      "bbox": [
+        1276,
+        1813,
+        979,
+        1690
+      ],
+      "segmented_digits": 5,
+      "gt_digits": "86125",
+      "alignment": "exact",
+      "notes": [
+        "used projection-based segmentation fallback",
+        "projection segmented 5 components"
+      ]
+    },
+    {
+      "filename": "8.png",
+      "detected": true,
+      "corner": "top_right",
+      "bbox": [
+        1973,
+        0,
+        1515,
+        1278
+      ],
+      "segmented_digits": 1,
+      "gt_digits": "121090",
+      "alignment": "mismatch",
+      "notes": [
+        "digit component count 1 differs from hint 6",
+        "segmented 1 digit components"
+      ]
+    },
+    {
+      "filename": "9.png",
+      "detected": true,
+      "corner": "top_left",
+      "bbox": [
+        0,
+        0,
+        1619,
+        1319
+      ],
+      "segmented_digits": 4,
+      "gt_digits": "9059",
+      "alignment": "exact",
+      "notes": [
+        "segmented 4 digit components from 4 groups"
+      ]
+    }
+  ],
+  "crops": [
+    {
+      "crop_id": "1_d00",
+      "filename": "1.png",
+      "image_stem": "1",
+      "index": 0,
+      "bbox": [
+        523,
+        911,
+        118,
+        89
+      ],
+      "image_path": "crops\\1_d00.png",
+      "gt_digits": "99716",
+      "direct_label": "9",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "1_d01",
+      "filename": "1.png",
+      "image_stem": "1",
+      "index": 1,
+      "bbox": [
+        665,
+        911,
+        28,
+        64
+      ],
+      "image_path": "crops\\1_d01.png",
+      "gt_digits": "99716",
+      "direct_label": "9",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "1_d02",
+      "filename": "1.png",
+      "image_stem": "1",
+      "index": 2,
+      "bbox": [
+        881,
+        911,
+        70,
+        89
+      ],
+      "image_path": "crops\\1_d02.png",
+      "gt_digits": "99716",
+      "direct_label": "7",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "1_d03",
+      "filename": "1.png",
+      "image_stem": "1",
+      "index": 3,
+      "bbox": [
+        966,
+        911,
+        68,
+        70
+      ],
+      "image_path": "crops\\1_d03.png",
+      "gt_digits": "99716",
+      "direct_label": "1",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "1_d04",
+      "filename": "1.png",
+      "image_stem": "1",
+      "index": 4,
+      "bbox": [
+        1046,
+        911,
+        39,
+        41
+      ],
+      "image_path": "crops\\1_d04.png",
+      "gt_digits": "99716",
+      "direct_label": "6",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "10_d00",
+      "filename": "10.png",
+      "image_stem": "10",
+      "index": 0,
+      "bbox": [
+        329,
+        1068,
+        23,
+        37
+      ],
+      "image_path": "crops\\10_d00.png",
+      "gt_digits": "83810",
+      "direct_label": "8",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "10_d01",
+      "filename": "10.png",
+      "image_stem": "10",
+      "index": 1,
+      "bbox": [
+        366,
+        1053,
+        77,
+        43
+      ],
+      "image_path": "crops\\10_d01.png",
+      "gt_digits": "83810",
+      "direct_label": "3",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "10_d02",
+      "filename": "10.png",
+      "image_stem": "10",
+      "index": 2,
+      "bbox": [
+        451,
+        1053,
+        23,
+        53
+      ],
+      "image_path": "crops\\10_d02.png",
+      "gt_digits": "83810",
+      "direct_label": "8",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "10_d03",
+      "filename": "10.png",
+      "image_stem": "10",
+      "index": 3,
+      "bbox": [
+        487,
+        1053,
+        48,
+        53
+      ],
+      "image_path": "crops\\10_d03.png",
+      "gt_digits": "83810",
+      "direct_label": "1",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "10_d04",
+      "filename": "10.png",
+      "image_stem": "10",
+      "index": 4,
+      "bbox": [
+        543,
+        1053,
+        96,
+        46
+      ],
+      "image_path": "crops\\10_d04.png",
+      "gt_digits": "83810",
+      "direct_label": "0",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "11_d00",
+      "filename": "11.png",
+      "image_stem": "11",
+      "index": 0,
+      "bbox": [
+        119,
+        1326,
+        254,
+        122
+      ],
+      "image_path": "crops\\11_d00.png",
+      "gt_digits": "83214",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "11_d01",
+      "filename": "11.png",
+      "image_stem": "11",
+      "index": 1,
+      "bbox": [
+        449,
+        1386,
+        31,
+        62
+      ],
+      "image_path": "crops\\11_d01.png",
+      "gt_digits": "83214",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "11_d02",
+      "filename": "11.png",
+      "image_stem": "11",
+      "index": 2,
+      "bbox": [
+        495,
+        1346,
+        16,
+        99
+      ],
+      "image_path": "crops\\11_d02.png",
+      "gt_digits": "83214",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "12_d00",
+      "filename": "12.png",
+      "image_stem": "12",
+      "index": 0,
+      "bbox": [
+        0,
+        632,
+        62,
+        49
+      ],
+      "image_path": "crops\\12_d00.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "12_d01",
+      "filename": "12.png",
+      "image_stem": "12",
+      "index": 1,
+      "bbox": [
+        69,
+        642,
+        13,
+        5
+      ],
+      "image_path": "crops\\12_d01.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "12_d02",
+      "filename": "12.png",
+      "image_stem": "12",
+      "index": 2,
+      "bbox": [
+        136,
+        641,
+        13,
+        13
+      ],
+      "image_path": "crops\\12_d02.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "12_d03",
+      "filename": "12.png",
+      "image_stem": "12",
+      "index": 3,
+      "bbox": [
+        157,
+        646,
+        16,
+        9
+      ],
+      "image_path": "crops\\12_d03.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "13_d00",
+      "filename": "13.png",
+      "image_stem": "13",
+      "index": 0,
+      "bbox": [
+        323,
+        848,
+        5,
+        5
+      ],
+      "image_path": "crops\\13_d00.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 5,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "13_d01",
+      "filename": "13.png",
+      "image_stem": "13",
+      "index": 1,
+      "bbox": [
+        923,
+        855,
+        9,
+        14
+      ],
+      "image_path": "crops\\13_d01.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 5,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "13_d02",
+      "filename": "13.png",
+      "image_stem": "13",
+      "index": 2,
+      "bbox": [
+        1043,
+        812,
+        40,
+        81
+      ],
+      "image_path": "crops\\13_d02.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 5,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "13_d03",
+      "filename": "13.png",
+      "image_stem": "13",
+      "index": 3,
+      "bbox": [
+        1104,
+        839,
+        5,
+        20
+      ],
+      "image_path": "crops\\13_d03.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 5,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "13_d04",
+      "filename": "13.png",
+      "image_stem": "13",
+      "index": 4,
+      "bbox": [
+        1395,
+        850,
+        21,
+        33
+      ],
+      "image_path": "crops\\13_d04.png",
+      "gt_digits": "821224",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 5,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "14_d00",
+      "filename": "14.png",
+      "image_stem": "14",
+      "index": 0,
+      "bbox": [
+        716,
+        542,
+        30,
+        40
+      ],
+      "image_path": "crops\\14_d00.png",
+      "gt_digits": "83219",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "14_d01",
+      "filename": "14.png",
+      "image_stem": "14",
+      "index": 1,
+      "bbox": [
+        771,
+        555,
+        8,
+        25
+      ],
+      "image_path": "crops\\14_d01.png",
+      "gt_digits": "83219",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "14_d02",
+      "filename": "14.png",
+      "image_stem": "14",
+      "index": 2,
+      "bbox": [
+        809,
+        439,
+        304,
+        306
+      ],
+      "image_path": "crops\\14_d02.png",
+      "gt_digits": "83219",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "14_d03",
+      "filename": "14.png",
+      "image_stem": "14",
+      "index": 3,
+      "bbox": [
+        1550,
+        551,
+        12,
+        16
+      ],
+      "image_path": "crops\\14_d03.png",
+      "gt_digits": "83219",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "15_d00",
+      "filename": "15.png",
+      "image_stem": "15",
+      "index": 0,
+      "bbox": [
+        1083,
+        262,
+        29,
+        69
+      ],
+      "image_path": "crops\\15_d00.png",
+      "gt_digits": "83218",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 2,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "15_d01",
+      "filename": "15.png",
+      "image_stem": "15",
+      "index": 1,
+      "bbox": [
+        1126,
+        235,
+        100,
+        102
+      ],
+      "image_path": "crops\\15_d01.png",
+      "gt_digits": "83218",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 2,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "17_d00",
+      "filename": "17.png",
+      "image_stem": "17",
+      "index": 0,
+      "bbox": [
+        288,
+        59,
+        25,
+        36
+      ],
+      "image_path": "crops\\17_d00.png",
+      "gt_digits": "11290",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "17_d01",
+      "filename": "17.png",
+      "image_stem": "17",
+      "index": 1,
+      "bbox": [
+        359,
+        31,
+        10,
+        6
+      ],
+      "image_path": "crops\\17_d01.png",
+      "gt_digits": "11290",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "17_d02",
+      "filename": "17.png",
+      "image_stem": "17",
+      "index": 2,
+      "bbox": [
+        380,
+        26,
+        7,
+        5
+      ],
+      "image_path": "crops\\17_d02.png",
+      "gt_digits": "11290",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "17_d03",
+      "filename": "17.png",
+      "image_stem": "17",
+      "index": 3,
+      "bbox": [
+        401,
+        21,
+        4,
+        4
+      ],
+      "image_path": "crops\\17_d03.png",
+      "gt_digits": "11290",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 4,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "18_d00",
+      "filename": "18.png",
+      "image_stem": "18",
+      "index": 0,
+      "bbox": [
+        166,
+        346,
+        32,
+        11
+      ],
+      "image_path": "crops\\18_d00.png",
+      "gt_digits": "9061",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "18_d01",
+      "filename": "18.png",
+      "image_stem": "18",
+      "index": 1,
+      "bbox": [
+        224,
+        340,
+        509,
+        30
+      ],
+      "image_path": "crops\\18_d01.png",
+      "gt_digits": "9061",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "18_d02",
+      "filename": "18.png",
+      "image_stem": "18",
+      "index": 2,
+      "bbox": [
+        793,
+        348,
+        33,
+        16
+      ],
+      "image_path": "crops\\18_d02.png",
+      "gt_digits": "9061",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "19_d00",
+      "filename": "19.png",
+      "image_stem": "19",
+      "index": 0,
+      "bbox": [
+        763,
+        0,
+        805,
+        786
+      ],
+      "image_path": "crops\\19_d00.png",
+      "gt_digits": "61090",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 1,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "2_d00",
+      "filename": "2.png",
+      "image_stem": "2",
+      "index": 0,
+      "bbox": [
+        0,
+        654,
+        14,
+        69
+      ],
+      "image_path": "crops\\2_d00.png",
+      "gt_digits": "4599",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 2,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "2_d01",
+      "filename": "2.png",
+      "image_stem": "2",
+      "index": 1,
+      "bbox": [
+        39,
+        627,
+        155,
+        121
+      ],
+      "image_path": "crops\\2_d01.png",
+      "gt_digits": "4599",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 2,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "20_d00",
+      "filename": "20.png",
+      "image_stem": "20",
+      "index": 0,
+      "bbox": [
+        1348,
+        86,
+        8,
+        23
+      ],
+      "image_path": "crops\\20_d00.png",
+      "gt_digits": "171288",
+      "direct_label": "1",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "20_d01",
+      "filename": "20.png",
+      "image_stem": "20",
+      "index": 1,
+      "bbox": [
+        1372,
+        86,
+        13,
+        17
+      ],
+      "image_path": "crops\\20_d01.png",
+      "gt_digits": "171288",
+      "direct_label": "7",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "20_d02",
+      "filename": "20.png",
+      "image_stem": "20",
+      "index": 2,
+      "bbox": [
+        1395,
+        88,
+        6,
+        12
+      ],
+      "image_path": "crops\\20_d02.png",
+      "gt_digits": "171288",
+      "direct_label": "1",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "20_d03",
+      "filename": "20.png",
+      "image_stem": "20",
+      "index": 3,
+      "bbox": [
+        1411,
+        90,
+        4,
+        7
+      ],
+      "image_path": "crops\\20_d03.png",
+      "gt_digits": "171288",
+      "direct_label": "2",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "20_d04",
+      "filename": "20.png",
+      "image_stem": "20",
+      "index": 4,
+      "bbox": [
+        1460,
+        83,
+        20,
+        8
+      ],
+      "image_path": "crops\\20_d04.png",
+      "gt_digits": "171288",
+      "direct_label": "8",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "20_d05",
+      "filename": "20.png",
+      "image_stem": "20",
+      "index": 5,
+      "bbox": [
+        1531,
+        89,
+        7,
+        14
+      ],
+      "image_path": "crops\\20_d05.png",
+      "gt_digits": "171288",
+      "direct_label": "8",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "3_d00",
+      "filename": "3.png",
+      "image_stem": "3",
+      "index": 0,
+      "bbox": [
+        127,
+        803,
+        7,
+        13
+      ],
+      "image_path": "crops\\3_d00.png",
+      "gt_digits": "82318",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "3_d01",
+      "filename": "3.png",
+      "image_stem": "3",
+      "index": 1,
+      "bbox": [
+        139,
+        817,
+        11,
+        12
+      ],
+      "image_path": "crops\\3_d01.png",
+      "gt_digits": "82318",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "3_d02",
+      "filename": "3.png",
+      "image_stem": "3",
+      "index": 2,
+      "bbox": [
+        224,
+        781,
+        26,
+        36
+      ],
+      "image_path": "crops\\3_d02.png",
+      "gt_digits": "82318",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "4_d00",
+      "filename": "4.png",
+      "image_stem": "4",
+      "index": 0,
+      "bbox": [
+        588,
+        124,
+        45,
+        55
+      ],
+      "image_path": "crops\\4_d00.png",
+      "gt_digits": "8249",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 2,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "4_d01",
+      "filename": "4.png",
+      "image_stem": "4",
+      "index": 1,
+      "bbox": [
+        644,
+        123,
+        5,
+        54
+      ],
+      "image_path": "crops\\4_d01.png",
+      "gt_digits": "8249",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 2,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "5_d00",
+      "filename": "5.png",
+      "image_stem": "5",
+      "index": 0,
+      "bbox": [
+        0,
+        1081,
+        108,
+        47
+      ],
+      "image_path": "crops\\5_d00.png",
+      "gt_digits": "821224",
+      "direct_label": "8",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "5_d01",
+      "filename": "5.png",
+      "image_stem": "5",
+      "index": 1,
+      "bbox": [
+        155,
+        1065,
+        106,
+        63
+      ],
+      "image_path": "crops\\5_d01.png",
+      "gt_digits": "821224",
+      "direct_label": "2",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "5_d02",
+      "filename": "5.png",
+      "image_stem": "5",
+      "index": 2,
+      "bbox": [
+        317,
+        1065,
+        105,
+        63
+      ],
+      "image_path": "crops\\5_d02.png",
+      "gt_digits": "821224",
+      "direct_label": "1",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "5_d03",
+      "filename": "5.png",
+      "image_stem": "5",
+      "index": 3,
+      "bbox": [
+        448,
+        1065,
+        102,
+        63
+      ],
+      "image_path": "crops\\5_d03.png",
+      "gt_digits": "821224",
+      "direct_label": "2",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "5_d04",
+      "filename": "5.png",
+      "image_stem": "5",
+      "index": 4,
+      "bbox": [
+        586,
+        1065,
+        79,
+        63
+      ],
+      "image_path": "crops\\5_d04.png",
+      "gt_digits": "821224",
+      "direct_label": "2",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "5_d05",
+      "filename": "5.png",
+      "image_stem": "5",
+      "index": 5,
+      "bbox": [
+        701,
+        1106,
+        29,
+        22
+      ],
+      "image_path": "crops\\5_d05.png",
+      "gt_digits": "821224",
+      "direct_label": "4",
+      "alignment": "exact",
+      "seg_count": 6,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "6_d00",
+      "filename": "6.png",
+      "image_stem": "6",
+      "index": 0,
+      "bbox": [
+        340,
+        859,
+        58,
+        54
+      ],
+      "image_path": "crops\\6_d00.png",
+      "gt_digits": "86325",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "6_d01",
+      "filename": "6.png",
+      "image_stem": "6",
+      "index": 1,
+      "bbox": [
+        411,
+        871,
+        11,
+        28
+      ],
+      "image_path": "crops\\6_d01.png",
+      "gt_digits": "86325",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "6_d02",
+      "filename": "6.png",
+      "image_stem": "6",
+      "index": 2,
+      "bbox": [
+        480,
+        845,
+        61,
+        20
+      ],
+      "image_path": "crops\\6_d02.png",
+      "gt_digits": "86325",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 3,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "7_d00",
+      "filename": "7.png",
+      "image_stem": "7",
+      "index": 0,
+      "bbox": [
+        169,
+        1376,
+        35,
+        48
+      ],
+      "image_path": "crops\\7_d00.png",
+      "gt_digits": "86125",
+      "direct_label": "8",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "7_d01",
+      "filename": "7.png",
+      "image_stem": "7",
+      "index": 1,
+      "bbox": [
+        233,
+        1362,
+        10,
+        45
+      ],
+      "image_path": "crops\\7_d01.png",
+      "gt_digits": "86125",
+      "direct_label": "6",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "7_d02",
+      "filename": "7.png",
+      "image_stem": "7",
+      "index": 2,
+      "bbox": [
+        267,
+        1359,
+        32,
+        65
+      ],
+      "image_path": "crops\\7_d02.png",
+      "gt_digits": "86125",
+      "direct_label": "1",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "7_d03",
+      "filename": "7.png",
+      "image_stem": "7",
+      "index": 3,
+      "bbox": [
+        312,
+        1384,
+        9,
+        8
+      ],
+      "image_path": "crops\\7_d03.png",
+      "gt_digits": "86125",
+      "direct_label": "2",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "7_d04",
+      "filename": "7.png",
+      "image_stem": "7",
+      "index": 4,
+      "bbox": [
+        340,
+        1359,
+        39,
+        64
+      ],
+      "image_path": "crops\\7_d04.png",
+      "gt_digits": "86125",
+      "direct_label": "5",
+      "alignment": "exact",
+      "seg_count": 5,
+      "gt_len": 5,
+      "notes": []
+    },
+    {
+      "crop_id": "8_d00",
+      "filename": "8.png",
+      "image_stem": "8",
+      "index": 0,
+      "bbox": [
+        0,
+        1024,
+        95,
+        146
+      ],
+      "image_path": "crops\\8_d00.png",
+      "gt_digits": "121090",
+      "direct_label": null,
+      "alignment": "mismatch",
+      "seg_count": 1,
+      "gt_len": 6,
+      "notes": []
+    },
+    {
+      "crop_id": "9_d00",
+      "filename": "9.png",
+      "image_stem": "9",
+      "index": 0,
+      "bbox": [
+        9,
+        543,
+        63,
+        86
+      ],
+      "image_path": "crops\\9_d00.png",
+      "gt_digits": "9059",
+      "direct_label": "9",
+      "alignment": "exact",
+      "seg_count": 4,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "9_d01",
+      "filename": "9.png",
+      "image_stem": "9",
+      "index": 1,
+      "bbox": [
+        203,
+        591,
+        4,
+        13
+      ],
+      "image_path": "crops\\9_d01.png",
+      "gt_digits": "9059",
+      "direct_label": "0",
+      "alignment": "exact",
+      "seg_count": 4,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "9_d02",
+      "filename": "9.png",
+      "image_stem": "9",
+      "index": 2,
+      "bbox": [
+        218,
+        579,
+        4,
+        4
+      ],
+      "image_path": "crops\\9_d02.png",
+      "gt_digits": "9059",
+      "direct_label": "5",
+      "alignment": "exact",
+      "seg_count": 4,
+      "gt_len": 4,
+      "notes": []
+    },
+    {
+      "crop_id": "9_d03",
+      "filename": "9.png",
+      "image_stem": "9",
+      "index": 3,
+      "bbox": [
+        286,
+        588,
+        5,
+        7
+      ],
+      "image_path": "crops\\9_d03.png",
+      "gt_digits": "9059",
+      "direct_label": "9",
+      "alignment": "exact",
+      "seg_count": 4,
+      "gt_len": 4,
+      "notes": []
+    }
+  ]
+}
