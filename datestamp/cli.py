@@ -70,34 +70,13 @@ def _cmd_glyphs(args: argparse.Namespace) -> int:
 
 
 def _cmd_scan(args: argparse.Namespace) -> int:
-    from .calibration import run_calibrate
-    from .glyphs import run_glyphs
+    from .scan import run_scan
 
     photo_dir = Path(args.photo_dir)
     out_dir = Path(args.out_dir)
     limit = args.limit
     field_order = args.field_order
-
-    # scan should auto-run calibrate/glyphs if outputs missing (spec) - placeholders for now
-    cal_path = Path("calibration.json")
-    glyphs_dir = Path("glyphs")
-    if not cal_path.exists():
-        print(f"calibration.json missing; running calibrate on {photo_dir} ...")
-        rc = run_calibrate(photo_dir)
-        if rc != 0:
-            return rc
-    if not glyphs_dir.exists() or not any(glyphs_dir.iterdir()):
-        print(f"glyphs/ missing or empty; running glyphs on {photo_dir} ...")
-        rc = run_glyphs(photo_dir)
-        if rc != 0:
-            return rc
-
-    print("scan: pipeline not implemented yet (Milestone 0 scaffold).")
-    print(f"  photo_dir={photo_dir}")
-    print(f"  out_dir={out_dir}")
-    print(f"  field_order={field_order}")
-    print(f"  limit={limit}")
-    return 0
+    return run_scan(photo_dir, out_dir, field_order=field_order, limit=limit)
 
 
 def _cmd_apply(args: argparse.Namespace) -> int:
