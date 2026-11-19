@@ -1,108 +1,211 @@
 # Datestamp OCR
 
-Tool to read orange/red analog date stamps burned into scanned family photos (1980s–2000s film cameras) and write the photographed date into EXIF metadata.
+Local/offline Python tool to read orange/red analog date stamps burned into scanned family photos (film camera era, ~1980s–2000s) and write the photographed date into EXIF metadata.
 
-**Status:** Milestone 0 scaffold in progress (CLI/contracts/utilities). Pipeline stages are not implemented yet.
+- **Windows 11**, **Python 3.11+**, **CPU-only** (no CUDA), no WSL/Docker
+- **No runtime network calls**, no paid APIs/cloud OCR, **no LLM** in the pipeline
+- **Correctness and reviewability over speed** (designed for archives in the hundreds to low thousands)
+- Originals are **never modified** except the final metadata write step, which is gated behind explicit `--apply`
 
-## Goals and constraints
-- Windows 11, Python 3.11+, CPU-only (no CUDA), no WSL/Docker.
-- No runtime network calls, no paid APIs/cloud OCR, no LLM in pipeline.
-- Correctness and reviewability over speed.
-- Originals are never modified except the final metadata write step with explicit `--apply`.
+## Project status
+
+Milestones 0–9 are implemented (CLI, calibration, detection, segmentation/glyph bootstrap, recognition, parsing/pivot/layout checks, confidence/classification, scan/review outputs with caching, gated EXIF apply, and tests including e2e scoring against `samples/ground_truth.csv`).
+
+Current sample-run recognition quality is limited (see **Final sample run report** below), but the pipeline is inspectable and review/correction-driven: use `review.html` and `corrections.csv` to verify and fix reads before applying metadata.
 
 ## Setup (Windows, uv)
-1. Install [uv](https://docs.astral.sh/uv/) (e.g. `winget install --id=astral-sh.uv -e` or via the official installer).
-2. From the project root, create/sync the environment and install dependencies:
+
+1. Install Python 3.11+.
+2. Install [uv](https://docs.astral.sh/uv/), for example:
+   ```powershell
+   winget install --id=astral-sh.uv -e
+   ```
+3. From the project root, create/sync the environment and install dependencies:
    ```powershell
    uv sync --extra dev
    ```
-   This uses `pyproject.toml` (and `uv.lock` when present) to manage the virtual environment and dependencies. Python 3.11+ is required.
-3. Install **ExifTool** (required for Stage 6 `apply` only):
+   - Uses `pyproject.toml` (and `uv.lock` when present) as the source of truth.
+   - `--extra dev` installs `pytest` for tests; runtime-only install can use `uv sync`.
+4. (Optional, required for `apply` only) Install **ExifTool**:
    - Download from https://exiftool.org/
-   - Place `exiftool(-k).exe` on your `PATH` as `exiftool.exe` (or ensure `exiftool` is callable)
-   - Verify: `exiftool -ver`
-   - If missing, the tool should print clear instructions instead of failing with a traceback (to be enforced in apply implementation).
+   - Extract and rename `exiftool(-k).exe` to `exiftool.exe`
+   - Place it on your `PATH` (or add its folder to `PATH`)
+   - Verify:
+     ```powershell
+     exiftool -ver
+     ```
+   - `scan`, `calibrate`, and `glyphs` do **not** require ExifTool. `apply` performs a preflight check and prints clear Windows install instructions if ExifTool is missing.
 
-## CLI (planned / in progress)
-Run commands via `uv` (no manual venv activation required):
+## CLI usage
+
+Run via `uv` (no manual venv activation required):
+
 ```powershell
-uv run datestamp calibrate <photo_dir>       # re-measure colour/geometry, rewrite calibration.json
-uv run datestamp glyphs    <photo_dir>       # build the reference digit set
-uv run datestamp scan      <photo_dir> --out results/ --field-order YMD --limit N
-uv run datestamp apply     <photo_dir> --results results/ [--apply] [--also-file-times]
+# 1) Measure sample properties and write calibration.json (re-runnable)
+uv run datestamp calibrate <photo_dir>
+
+# 2) Build/rebuild reference digit glyph cache from samples
+uv run datestamp glyphs <photo_dir>
+
+# 3) Scan photos and produce review outputs (auto-runs calibrate/glyphs if missing)
+uv run datestamp scan <photo_dir> --out results --field-order YMD --limit N
+
+# 4) Dry-run metadata apply plan (default, no file changes)
+uv run datestamp apply <photo_dir> --results results
+
+# 5) Actually write metadata (explicit gate)
+uv run datestamp apply <photo_dir> --results results --apply [--also-file-times]
 ```
-A convenience entrypoint is also available: `uv run python datestamp.py --help`.
 
-Current status:
-- `calibrate`: implemented (writes `calibration.json`)
-- `glyphs`: implemented (Milestone 3 bootstrap/cache; best-effort segmentation + clustering + GT-alignment labeling)
-- `recognize` (module): implemented (Milestone 4 template-matching recogniser over cached glyphs; scan CLI wiring pending)
-- `scan`: scaffold (pipeline not yet wired; auto-runs missing calibration/glyph steps when implemented)
-- `apply`: placeholder (Milestone 8)
+Notes:
+- Convenience entrypoint: `uv run python datestamp.py ...` (same subcommands)
+- `--field-order` defaults to `YMD` and is used as an assumption/override; parsing also performs auto-detection/cross-checks and reports layout concerns.
+- `--limit` is useful for quick test runs.
 
-### Detection evaluation (Milestone 2 utility)
-A detection evaluation harness is available for development/validation:
+### Detection evaluation utility (development/validation)
+
 ```powershell
 uv run python -m datestamp.detect samples --no-fallback
 # optional: --debug-dir results/debug-detect --limit N --model-path models/yolo-date-stamp-detector.onnx
 ```
-This reports per-image found/not-found, method/corner/confidence/bbox, and checks `samples/ground_truth.csv` `no_stamp` cases. Runtime remains offline.
+Reports per-image detection results and checks `samples/ground_truth.csv` `no_stamp` cases. Runtime remains offline.
 
-### Glyph bootstrap (Milestone 3)
-Builds/rebuilds the reference glyph cache from detected stamp crops:
+## Outputs and review workflow
+
+`scan` writes non-destructive outputs to the `--out` directory (default `results/`):
+
+- `results.csv` — per-image results: `filename, raw_digits_read, parsed_date, per_digit_scores, overall_confidence, classification, notes`
+- `review.html` — self-contained single-file review page (stamp crops embedded as base64), **sorted lowest confidence / highest review priority first**, with color-coded classifications
+- `corrections.csv` — hand-editable corrections stub (`filename,corrected_date,corrected_digits,notes`)
+- `cache/` — resumable per-image scan cache and cropped stamp images (safe to delete to force recompute, but rescanning is slower)
+
+### How to read `review.html`
+
+- Open `review.html` in a browser and review rows from top to bottom (most uncertain/problematic first).
+- For each photo, compare the **stamp crop** against **Raw / Date**, **Confidence/classification**, and **Notes**.
+- Classifications:
+  - `confident`: strong evidence and plausible parsed date
+  - `needs_review`: plausible but not strong enough to auto-apply
+  - `failed`: unreadable/implausible/unparsed or weak evidence
+  - `no_stamp_found`: no stamp detected
+- Treat `notes` as explainability hints (detection/segmentation/parse/plausibility/penalty reasons), not ground truth.
+
+### How to fill `corrections.csv`
+
+- `corrections.csv` is authoritative for `apply` when a row contains a correction.
+- Columns:
+  - `filename`: exact image filename (as in `results.csv`)
+  - `corrected_date`: preferred, format `YYYY-MM-DD`
+  - `corrected_digits`: optional fallback (digits as printed); used only if `corrected_date` is empty and the digits can be parsed
+  - `notes`: freeform (for your tracking)
+- Typical workflow: add/fill rows for misreads or anything you want to force, save the CSV, then run `apply` in dry-run mode to verify the plan.
+
+## Metadata apply (safe, gated)
+
+`apply` is the **only** step that can modify photo files.
+
+- **Dry-run by default**: prints exactly what would be written and what would be skipped (no file changes).
+- **Explicit gate**: pass `--apply` to write metadata.
+- **Eligibility**: only `confident` scan results and rows with authoritative corrections in `corrections.csv` are written. Everything else is skipped and listed with reasons.
+- **EXIF behavior**:
+  - Sets `DateTimeOriginal` to the stamp date at **12:00:00** (day known, time unknown; midday reduces timezone date shifts)
+  - Leaves `CreateDate` unchanged (scan/digitization date preserved)
+  - Optional `--also-file-times` sets `FileModifyDate` to the same datetime (helps Windows Explorer sorting)
+- **Write method**: batched `exiftool -csv=` (not one process per file)
+- **Backups**: ExifTool `_original` backups are kept by default (the tool does **not** pass `-overwrite_original`)
+- **Failure handling**: batch failures are reported; remaining batches continue (partial-failure tolerant) and the command exits non-zero on failures
+
+### Reversal / undo (ExifTool backups)
+
+If backups were kept (default), you can restore originals:
+
 ```powershell
-uv run datestamp glyphs <photo_dir>
-# convenience: uv run python datestamp.py glyphs samples
+# Restore originals in a directory
+exiftool -restore_original "<photo_dir>"
+
+# Restore recursively (if needed)
+exiftool -restore_original -r "<photo_dir>"
+
+# After verifying restores, optionally remove backup files
+exiftool -delete_original "<photo_dir>"
 ```
-Outputs (default `glyphs/`):
-- `manifest.json`: clustering/labeling metadata, per-digit exemplars, cluster membership, sanity warnings
-- `report.json`: per-image detection/segmentation/alignment summary, crop records, missing/unlabeled cluster info
-- `crops/`: normalized per-digit crop images (inspectable)
-- `representatives/`: representative image per cluster
-- `digits/`: exemplar images grouped by labeled digit
 
-Notes: segmentation and GT alignment are best-effort (coarse detections, variable digit counts/formats/fonts). The command prints digit coverage (0–9 present/missing) and any sanity warnings; inspect artifacts when improving later stages. No external OCR fallback tools are assumed/used in this environment.
+Always verify on a copy/small subset first for large archive runs.
 
-### Template matching recogniser (Milestone 4)
-`datestamp/recognize.py` loads glyph templates from `glyphs/` and recognizes segmented digit crops by template matching:
-- per-digit best label, score, margin/alternates, and best-template trace in `DigitReading`
-- raw digit string assembly for an ordered component sequence
-- glyph coverage utilities to report/warn on missing digits 0–9
+## Project structure
 
-Recognition quality currently depends on segmentation and glyph/template quality; scan pipeline integration comes in later milestones.
+- `datestamp.py` — convenience CLI entrypoint
+- `datestamp/` — pipeline modules and CLI implementation
+  - `calibration.py` (Stage 0), `detect.py` (Stage 1), `segment.py`/`glyphs.py` (Stage 2 bootstrap), `recognize.py` (Stage 2 recognizer), `parse.py` (Stage 3), `confidence.py` (Stage 4), `scan.py`/`cache.py`/`review.py` (Stage 5), `apply.py` (Stage 6)
+- `pyproject.toml`, `uv.lock` — dependencies and tooling (`uv`, console script, pytest config)
+- `calibration.json` — committed runtime calibration defaults (generated/refined from samples)
+- `glyphs/` — inspectable cached glyph crops, representatives, per-digit exemplars, and manifests/reports
+- `samples/` — local sample photos and `ground_truth.csv` (**authoritative, do not overwrite**; directory is gitignored locally)
+- `results/` — scan outputs and cache (`results.csv`, `review.html`, `corrections.csv`, `cache/`)
+- `tests/` — unit tests (photo-free where applicable) and e2e sample scoring
 
-## Project structure (target)
-- `pyproject.toml`: project metadata, dependencies, and `datestamp` console script (managed with `uv`)
-- `datestamp.py` / `datestamp/`: CLI and pipeline modules
-- `calibration.json`: committed runtime calibration defaults (generated/refined from samples)
-- `glyphs/`: cached reference digit glyph images (inspectable)
-- `samples/`: sample photos and `ground_truth.csv` (authoritative; do not overwrite; directory is gitignored locally)
-- `tests/`: unit tests (no photos required for core logic) and e2e sample scoring
-- `results/`: scan outputs (`results.csv`, `review.html`, `corrections.csv`, caches/debug as added)
+## Optional ONNX fallback detector (offline after setup)
 
-## Review workflow (to be implemented)
-- `scan` produces non-destructive outputs: `results.csv`, self-contained `review.html` (lowest confidence first, crops embedded), and `corrections.csv` stub.
-- Review `review.html`, fill corrections in `corrections.csv` where needed.
-- `apply` defaults to dry-run and requires `--apply` to write metadata.
+- Primary detector: HSV red/orange masking + geometry/connected-component heuristics (calibration-driven).
+- Optional fallback: `OnnxYoloStampDetector` for `pike00/yolo-date-stamp-detector` (CPU ONNX Runtime), used on HSV miss/weak/implausible cases when a local model is available.
+- **Default model path:** `models/yolo-date-stamp-detector.onnx` (not bundled).
+- **Setup-time only**: obtain/export the model to ONNX once on a machine where you can download it, then copy the `.onnx` locally. Runtime performs **no network calls**.
+- If the model is missing/unloadable, the tool continues with HSV+geometry only.
 
-## Metadata write & undo (to be implemented)
-- Intended writes: `DateTimeOriginal` = stamp date, keep `CreateDate` as scan date, time `12:00:00`, optional `FileModifyDate` via `--also-file-times`.
-- Writes via batched `exiftool -csv=`; backups (`_original`) kept by default.
-- Undo guidance will be documented with exact `exiftool` restore commands once apply is implemented.
+## Decision log (measured from `samples/`, Milestones 0–10)
 
-## Decision log
-- **2026-xx Milestone 0 (scaffold):** Established package/CLI skeleton, shared data contracts (`config.py`), Windows-safe I/O helpers (`io_utils.py`), pinned baseline dependencies, and placeholder stage modules. No OCR/calibration/glyph/EXIF logic implemented yet.
-- **2026-xx Tooling update:** Re-architected project to use **uv** for environment/dependency management and command execution (`pyproject.toml`, `uv sync`, `uv run datestamp ...`, `uv run pytest`). Legacy `requirements.txt` removed in favor of `pyproject.toml` as the source of truth.
-- **2026-xx Milestone 1 (calibration):** Implemented `datestamp calibrate` to measure samples via HSV red/orange masking across four corner regions and connected-component heuristics, writing inspectable `calibration.json` (re-runnable). Measured from 20 sample images: 600 DPI median, no EXIF orientation tags observed, stamp candidates detected in all four corners (counts bottom_right=7, bottom_left=6, top_left=4, top_right=3), HSV ranges approx `[0-34]` and `[156-179]` with `s/v >= ~73`, median bbox fraction recorded, and font hints indicating likely solid strokes on average while notes flag multi-camera/font variability (incl. seven-segment cases seen in samples). Values are initial defaults for later detection refinement.
-- **2026-xx Milestone 2 (detection):** Implemented Stage 1 in `datestamp/detect.py`: primary HSV mask + geometry detector (calibration-driven HSV ranges, morphology, all four corner search with widened regions, connected-component row-plausibility heuristics, padded crop/bbox output) and a pluggable fallback interface with `OnnxYoloStampDetector` (CPU ONNX Runtime) for `pike00/yolo-date-stamp-detector`. Fallback is attempted on HSV miss/weak or implausible results when a local model is available. Added detection evaluation harness (`uv run python -m datestamp.detect ...`) with per-image report and GT `no_stamp` checking. Current sample eval (HSV-only, no model): **19 found / 1 not found**, and **1/1 ground-truth `no_stamp` correctly not detected** (`16.png` rejected as low-confidence/non-plausible). Bboxes are currently coarse corner-region crops (good for localization; segmentation will refine) and confidence scoring is provisional pending later stages.
-- **2026-xx Milestone 3 (glyph bootstrap):** Implemented `datestamp/segment.py` (digit segmentation from detected stamp crops via HSV masking, component clustering/projection-based fallback, normalized glyph extraction) and `datestamp/glyphs.py` (glyph bootstrap/cache pipeline). `uv run datestamp glyphs samples` now runs detection+segmentation, collects ordered digit crops, clusters them (KMeans over normalized glyph features), auto-labels clusters/records using best-effort `samples/ground_truth.csv` alignment (exact when segmented count matches GT digit length; GT length used as a hint), records positional sanity warnings, and writes inspectable artifacts under `glyphs/` (`manifest.json`, `report.json`, `crops/`, `representatives/`, `digits/`). No external/local OCR fallback tool was available in this environment; labeling relies on GT alignment + cluster majority. Current samples run: 20 images scanned, 19 detected, 68 crops, 12 clusters, **all digits 0–9 present**, 6 exact and 13 mismatch alignments, 1 sanity warning (format-position ambiguity case recorded in report).
-- **Open (from samples/spec):** `samples/ground_truth.csv` contains variable-length `digits` values while spec references six characters; normalization/alignment for scoring and parsing must be defined during implementation and recorded here. Date formats and fonts vary across samples (including seven-segment examples); calibration/glyph/bootstrap strategies must remain inspectable and handle this variability.
-- **Open (segmentation/bootstrap quality):** Segmentation operates on coarse detection crops and currently achieves limited exact count alignment on samples (mismatches remain common). Cluster labels may be noisy where alignment is imperfect; inspect `glyphs/` artifacts and improve segmentation/tightening in later milestones before trusting full-archive recognition.
-- **Open:** ONNX detector model acquisition/export is a setup-time activity (runtime must remain offline). Fallback expects a local ONNX model (default path `models/yolo-date-stamp-detector.onnx`). Exact download/export steps are not automated in-runtime; obtain/export the Hugging Face model to ONNX once during setup and place it at that path (or pass `--model-path` to detection eval) when fallback is needed.
+- **Calibration (`calibration.json`, measured from 20 sample images):** HSV red/orange ranges `[0–34]` and `[156–179]` with `s/v >= ~73/74`; corner search regions `x_frac=0.35`, `y_frac=0.35` checked in all four corners; EXIF orientation tags observed as `none` (detector still checks all corners). Median dimensions ~3380×2340, DPI median 600×600. Stamp-corner candidate counts: `bottom_right=7`, `bottom_left=6`, `top_left=4`, `top_right=3`. Median bbox fraction recorded (`x≈0.409, y≈0.650, w≈0.343, h≈0.337`).
+- **Detection:** HSV+geometry is the primary path; optional CPU ONNX fallback is pluggable/offline-local. Current detection crops are often coarse corner-region crops (localization-first), which affects downstream segmentation.
+- **Glyph bootstrap (`glyphs/`, current sample run):** 20 images scanned, 19 detected, 68 digit crops, 12 clusters, **digits 0–9 all present** (no missing glyphs). Auto-labeling uses best-effort alignment to `samples/ground_truth.csv` where segment counts match; 6 exact and 13 mismatch alignments recorded, 0 unlabeled clusters. One sanity warning recorded: `20.png` 6-digit exact alignment gives day tens `8` (expected 0–3), indicating format/segmentation ambiguity. No external OCR fallback tool was used in this environment.
+- **Recognition:** Template matching against cached glyph exemplars/representatives; per-digit scores/margins/alternates retained for explainability. Quality depends strongly on segmentation/crop tightness and glyph label quality.
+- **Parsing/layout/pivot:** Photo-free deterministic parsing with normalization, variable-length candidate splitting, field-order handling (`--field-order` assumption/override + auto-detect), and two-digit year expansion via batch-inferred pivot. Current sample scan inferred **pivot 29** (`YY<=29 -> 20YY`, else `19YY`) from 14 year samples. Layout cross-check reported a **loud warning** for assumed `YMD` (2/9 violating items, 22.2%; `field2>12: 2`, `field3>31: 2`), suggesting mixed/ambiguous layouts or segmentation/read errors in parts of the batch.
+- **Confidence/review:** Configurable scoring/classification (`confident/needs_review/failed/no_stamp_found`) emphasizes worst per-digit score, digit count/spacing, parse validity, and plausibility (calendar validity, future/scan-date/archive/year-range checks). `review.html` is the primary audit surface; `results.csv` and notes capture machine-readable detail.
+- **Metadata apply:** Dry-run default, explicit `--apply` gate, corrections authoritative over scan results, writes only eligible items, `DateTimeOriginal` set to stamp date at `12:00:00`, `CreateDate` preserved, optional `FileModifyDate`, batched `exiftool -csv=`, backups preserved by default, reversal instructions printed.
+- **Ground truth/format handling:** `samples/ground_truth.csv` contains variable-length `digits` strings and status text variants (e.g. `no stamp` wording in row 16); parsing/scoring/e2e comparison are implemented to handle variable lengths and normalize status/date fields for grading/reporting without modifying the GT file.
 
-## ONNX fallback detector setup (Stage 1, optional)
-- **Model:** `pike00/yolo-date-stamp-detector` (YOLO, fine-tuned for orange/red date stamps)
-- **Runtime:** ONNX Runtime (CPU), no network calls at runtime
-- **Default local path:** `models/yolo-date-stamp-detector.onnx`
-- **Setup-time (manual/offline-after-download):** download model artifacts and export to ONNX once (e.g. via Ultralytics export on a machine with the model available), then copy the resulting `.onnx` file into `models/` (create the directory if needed). Keep this as a one-time setup step; do not perform network calls during tool execution.
-- **Behavior:** if the model file is missing/unloadable, the tool continues with HSV+geometry detection and reports fallback unavailable in evaluation; if present, fallback is used on HSV misses/weak detections and an empty detection is treated as "no stamp".
+## Final sample run report (`samples/`, 20 images)
+
+Commands run on the bundled samples (artifacts in repo state): `calibrate`, `glyphs`, `scan --out results`.
+
+### Scan summary (latest `datestamp scan samples --out results`)
+
+- Total: 20
+- Classifications: `confident=1`, `needs_review=4`, `failed=14`, `no_stamp_found=1`
+- Parsed year distribution (preliminary parsed results): `1959=1, 1961=1, 1980=1, 1990=1, 2022=1, 2026=1, 2521=1`
+- Pivot: `29` (`YY<=29->20YY, else 19YY`) inferred from 14 year samples
+- Layout: **warning** for assumed `YMD` (2/9 violating items, 22.2%)
+- Glyph coverage: digits `0–9` present (none missing)
+- Outputs written: `results/results.csv`, `results/review.html`, `results/corrections.csv`, `results/cache/`
+
+### E2E scoring vs `samples/ground_truth.csv` (Milestone 9 scorer)
+
+- Digits (recogniser): **1/19 correct** (5.3%)
+- Date (parse/pivot): **1/19 correct** (5.3%)
+- Spec pass rules (`no_stamp`/`unreadable` handling): **1/1** (100.0%)
+- Correct match: `9.png` (`9059` → `1990-05-09`)
+- Correct `no_stamp` handling: `16.png` detected as `no_stamp_found` with no digits/date
+
+### Key gaps / mismatches (observed)
+
+- Segmentation quality on coarse detection crops is the primary bottleneck (frequent over/under-segmentation: 1–10 components observed), leading to wrong digit strings and parse failures/implausible dates.
+- Mixed stamp formats/fonts and variable digit lengths in samples increase ambiguity; layout/pivot logic is in place but depends on correct digit reads.
+- Glyph cache currently covers all digits `0–9`, but some exemplar/label assignments may be noisy due to alignment mismatches; inspect `glyphs/manifest.json`, `glyphs/report.json`, and image artifacts when improving segmentation/recognition.
+
+## Operational safeguards (verified)
+
+- Dry-run is the default for `apply`; metadata writes require explicit `--apply`
+- No GUI, no file moves/renames
+- No LLM in the pipeline
+- No runtime network calls (optional ONNX model is local/setup-time only)
+- Originals are not modified except gated metadata write; ExifTool backups preserved by default
+- `samples/ground_truth.csv` is treated as authoritative test input and is not overwritten by tooling
+
+## Running tests
+
+```powershell
+uv run pytest -q
+```
+
+Notes:
+- Unit tests are photo-free where applicable.
+- `tests/test_e2e_samples.py` runs the pipeline on `samples/` and prints a scorecard (digits vs date, spec rules, glyph coverage). It requires the local `samples/` data and generated calibration/glyph artifacts available in the working tree.

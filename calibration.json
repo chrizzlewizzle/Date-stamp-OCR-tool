@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-16T22:11:45.795242+00:00",
+  "generated_at": "2026-11-19T22:14:57.250561+00:00",
   "photo_dir": "samples",
   "measurement_method": {
     "description": "HSV red/orange thresholding in four corner regions with connected-component row heuristics.",
