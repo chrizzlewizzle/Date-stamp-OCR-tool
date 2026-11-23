@@ -11,7 +11,13 @@ from typing import Any, Optional
 import cv2
 import numpy as np
 
-from .config import CALIBRATION_FILENAME, Calibration
+from .config import (
+    ALL_STAMP_CORNERS,
+    CALIBRATION_FILENAME,
+    LANDSCAPE_STAMP_CORNERS,
+    PORTRAIT_STAMP_CORNERS,
+    Calibration,
+)
 from .io_utils import discover_images, read_json, write_json
 
 
@@ -382,9 +388,18 @@ def build_calibration(photo_dir: Path, measurements: list[ImageMeasurement], sum
         },
         "font_hints": summary.get("font_hints", {}),
         "orientation": {
-            "check_all_four_corners": True,
+            "check_all_four_corners": False,
+            "stamp_corners_by_orientation": {
+                "landscape": list(LANDSCAPE_STAMP_CORNERS),
+                "portrait": list(PORTRAIT_STAMP_CORNERS),
+                "square": list(ALL_STAMP_CORNERS),
+            },
             "exif_orientation_observed": summary.get("exif_orientation_tags", {}),
-            "note": "No EXIF orientation tags observed in sampled files; detector should still check all four corners for rotated scans.",
+            "note": (
+                "Landscape stamps are bottom-right. Portrait frames are rotated landscape frames, "
+                "so stamps land bottom-left or top-right; the detector checks only the corners for "
+                "the frame orientation and rotates portrait crops upright."
+            ),
         },
         "per_image": [
             {

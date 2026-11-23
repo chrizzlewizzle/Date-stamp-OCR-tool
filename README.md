@@ -68,7 +68,7 @@ Notes:
 uv run python -m datestamp.detect samples --no-fallback
 # optional: --debug-dir results/debug-detect --limit N --model-path models/yolo-date-stamp-detector.onnx
 ```
-Reports per-image detection results and checks `samples/ground_truth.csv` `no_stamp` cases. Runtime remains offline.
+Reports per-image detection results, expected corner per orientation, and checks `samples/ground_truth.csv` `no_stamp` cases. Runtime remains offline.
 
 ## Outputs and review workflow
 
@@ -154,8 +154,9 @@ Always verify on a copy/small subset first for large archive runs.
 
 ## Decision log (measured from `samples/`, Milestones 0–10)
 
-- **Calibration (`calibration.json`, measured from 20 sample images):** HSV red/orange ranges `[0–34]` and `[156–179]` with `s/v >= ~73/74`; corner search regions `x_frac=0.35`, `y_frac=0.35` checked in all four corners; EXIF orientation tags observed as `none` (detector still checks all corners). Median dimensions ~3380×2340, DPI median 600×600. Stamp-corner candidate counts: `bottom_right=7`, `bottom_left=6`, `top_left=4`, `top_right=3`. Median bbox fraction recorded (`x≈0.409, y≈0.650, w≈0.343, h≈0.337`).
-- **Detection:** HSV+geometry is the primary path; optional CPU ONNX fallback is pluggable/offline-local. Current detection crops are often coarse corner-region crops (localization-first), which affects downstream segmentation.
+- **Calibration (`calibration.json`, measured from 20 sample images):** HSV red/orange ranges `[0–34]` and `[156–179]` with `s/v >= ~73/74`; corner search regions `x_frac=0.35`, `y_frac=0.35`; EXIF orientation tags observed as `none`. Median dimensions ~3380×2340, DPI median 600×600. Median bbox fraction recorded (`x≈0.409, y≈0.650, w≈0.343, h≈0.337`).
+- **Detection corner policy:** analog stamps are corner-anchored by frame orientation. Landscape frames are searched only at `bottom_right`; portrait frames (rotated landscape frames) are searched at `bottom_left` and `top_right`, and their crops are rotated upright before segmentation. Nearly square frames fall back to checking all four corners. A bright/low-saturation fallback range catches faint overexposed stamps (e.g. pale pink on snow) without relaxing the primary mask.
+- **Detection:** HSV+geometry is the primary path; optional CPU ONNX fallback is pluggable/offline-local. Detection crops are often coarse corner-region crops (localization-first), which still affects downstream segmentation.
 - **Glyph bootstrap (`glyphs/`, current sample run):** 20 images scanned, 19 detected, 68 digit crops, 12 clusters, **digits 0–9 all present** (no missing glyphs). Auto-labeling uses best-effort alignment to `samples/ground_truth.csv` where segment counts match; 6 exact and 13 mismatch alignments recorded, 0 unlabeled clusters. One sanity warning recorded: `20.png` 6-digit exact alignment gives day tens `8` (expected 0–3), indicating format/segmentation ambiguity. No external OCR fallback tool was used in this environment.
 - **Recognition:** Template matching against cached glyph exemplars/representatives; per-digit scores/margins/alternates retained for explainability. Quality depends strongly on segmentation/crop tightness and glyph label quality.
 - **Parsing/layout/pivot:** Photo-free deterministic parsing with normalization, variable-length candidate splitting, field-order handling (`--field-order` assumption/override + auto-detect), and two-digit year expansion via batch-inferred pivot. Current sample scan inferred **pivot 29** (`YY<=29 -> 20YY`, else `19YY`) from 14 year samples. Layout cross-check reported a **loud warning** for assumed `YMD` (2/9 violating items, 22.2%; `field2>12: 2`, `field3>31: 2`), suggesting mixed/ambiguous layouts or segmentation/read errors in parts of the batch.
@@ -190,6 +191,19 @@ Commands run on the bundled samples (artifacts in repo state): `calibrate`, `gly
 - Segmentation quality on coarse detection crops is the primary bottleneck (frequent over/under-segmentation: 1–10 components observed), leading to wrong digit strings and parse failures/implausible dates.
 - Mixed stamp formats/fonts and variable digit lengths in samples increase ambiguity; layout/pivot logic is in place but depends on correct digit reads.
 - Glyph cache currently covers all digits `0–9`, but some exemplar/label assignments may be noisy due to alignment mismatches; inspect `glyphs/manifest.json`, `glyphs/report.json`, and image artifacts when improving segmentation/recognition.
+
+### Detection corner-policy check (`samples/`, 20 images)
+
+`uv run python -m datestamp.detect samples --no-fallback`:
+
+| Metric | All-four-corners (previous) | Orientation-aware (current) |
+|---|---|---|
+| Stamps found | 19/20 | 19/20 |
+| Found stamps in the expected corner | 6/19 | **19/19** |
+| `no_stamp` case correctly not detected | 1/1 | 1/1 |
+| Faint `2.png` stamp localized tightly | Wrong corner (false-positive crop) | **Bottom-right, tight crop** |
+
+Portrait samples (`6/7/11/12.png`) are now searched only at `bottom_left`/`top_right` and returned upright, so their vertical stamp rows become horizontal crops for segmentation. End-to-end digit recognition is still limited by segmentation/mask quality; this change fixes detection placement, not the remaining recognition bottleneck.
 
 ## Operational safeguards (verified)
 

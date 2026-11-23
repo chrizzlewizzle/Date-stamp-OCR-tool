@@ -10,7 +10,13 @@ from typing import Any, Iterable, Optional, Protocol
 import cv2
 import numpy as np
 
-from .config import CALIBRATION_FILENAME, DetectionResult
+from .config import (
+    ALL_STAMP_CORNERS,
+    CALIBRATION_FILENAME,
+    LANDSCAPE_STAMP_CORNERS,
+    PORTRAIT_STAMP_CORNERS,
+    DetectionResult,
+)
 from .io_utils import discover_images, read_csv_rows, read_json
 
 
@@ -31,6 +37,21 @@ class Candidate:
     component_count: int
     row_like: bool
     details: dict[str, Any]
+
+
+# Internal rotation codes (cv2's codes collide with 0 meaning "clockwise", which
+# is easy to confuse with "no rotation").
+_ROT_NONE = 0
+_ROT_CCW = 1
+_ROT_CW = 2
+_CV_ROTATION = {_ROT_CCW: cv2.ROTATE_90_COUNTERCLOCKWISE, _ROT_CW: cv2.ROTATE_90_CLOCKWISE}
+
+# How to rotate a portrait corner region so the (rotated) stamp row becomes
+# horizontal and upright again before analysis.
+_PORTRAIT_CORNER_ROTATION = {
+    "bottom_left": _ROT_CCW,
+    "top_right": _ROT_CW,
+}
 
 
 class OnnxYoloStampDetector:
@@ -219,6 +240,84 @@ def _corner_slices(h: int, w: int, y_frac: float, x_frac: float) -> dict[str, tu
     }
 
 
+def expected_stamp_corners(h: int, w: int, cal: Optional[dict[str, Any]] = None) -> list[str]:
+    """Return the corners that can contain a stamp for this image orientation.
+
+    Landscape frames: bottom-right only.
+    Portrait frames: bottom-left or top-right.
+    Nearly square frames are ambiguous, so all corners are checked.
+
+    A calibration file may override the defaults through
+    ``orientation.stamp_corners_by_orientation``.
+    """
+    override = {}
+    if isinstance(cal, dict):
+        orientation = cal.get("orientation")
+        if isinstance(orientation, dict):
+            candidate = orientation.get("stamp_corners_by_orientation")
+            if isinstance(candidate, dict):
+                override = candidate
+
+    if abs(w - h) <= 0.05 * max(w, h):
+        # Square-ish scan: do not risk missing a stamp by assuming an orientation.
+        configured_square = [c for c in (override.get("square", []) or []) if c in ALL_STAMP_CORNERS]
+        if configured_square:
+            return configured_square
+        if override:
+            merged: list[str] = []
+            for key in ("landscape", "portrait"):
+                for name in override.get(key, []) or []:
+                    if name in ALL_STAMP_CORNERS and name not in merged:
+                        merged.append(name)
+            if merged:
+                return merged
+        return list(ALL_STAMP_CORNERS)
+
+    key = "landscape" if w >= h else "portrait"
+    configured = [c for c in (override.get(key, []) or []) if c in ALL_STAMP_CORNERS]
+    if configured:
+        return configured
+    return list(LANDSCAPE_STAMP_CORNERS if key == "landscape" else PORTRAIT_STAMP_CORNERS)
+
+
+def _corner_view(image_bgr: np.ndarray, corner: str, yslc: slice, xslc: slice) -> tuple[np.ndarray, int]:
+    """Extract a corner region, rotating portrait regions so stamp text is upright."""
+    region = image_bgr[yslc, xslc]
+    h, w = image_bgr.shape[:2]
+    rotation = _PORTRAIT_CORNER_ROTATION.get(corner) if h > w else None
+    if rotation is None:
+        return region, _ROT_NONE
+    return cv2.rotate(region, _CV_ROTATION[rotation]), rotation
+
+
+def _view_bbox_to_image(
+    view_bbox: tuple[int, int, int, int],
+    region_shape: tuple[int, int],
+    rotation: int,
+    offset: tuple[int, int],
+) -> tuple[int, int, int, int]:
+    """Map a bbox from a rotated corner view back to full-image coordinates."""
+    vx, vy, vw, vh = view_bbox
+    if rotation == _ROT_NONE:
+        rx, ry, rw, rh = vx, vy, vw, vh
+    elif rotation == _ROT_CCW:
+        # View is region rotated CCW: (x, y) -> (y, Rw - 1 - x)
+        region_h, region_w = region_shape[:2]
+        rx = region_w - vy - vh
+        ry = vx
+        rw, rh = vh, vw
+    elif rotation == _ROT_CW:
+        # View is region rotated CW: (x, y) -> (Rh - 1 - y, x)
+        region_h, region_w = region_shape[:2]
+        rx = vy
+        ry = region_h - vx - vw
+        rw, rh = vh, vw
+    else:
+        rx, ry, rw, rh = vx, vy, vw, vh
+    ox, oy = offset
+    return int(ox + rx), int(oy + ry), int(rw), int(rh)
+
+
 def build_mask_from_ranges(hsv: np.ndarray, ranges: list[dict[str, int]]) -> np.ndarray:
     mask = np.zeros(hsv.shape[:2], dtype=np.uint8)
     for r in ranges:
@@ -321,6 +420,92 @@ def _candidate_from_mask(mask: np.ndarray, corner: str, offset: tuple[int, int],
                      pixel_count=pixel_count, component_count=comp_count, row_like=row_like, details=details)
 
 
+# Overexposed/faint stamps (e.g. pale pink on snow) can fall outside the main
+# calibrated S/V ranges. These bright low-saturation pink/orange ranges are only
+# used as a fallback when the primary mask yields no acceptable stamp.
+FAINT_STAMP_HSV_RANGES = [
+    {"h_min": 150, "h_max": 179, "s_min": 22, "s_max": 95, "v_min": 215, "v_max": 255},
+    {"h_min": 0, "h_max": 45, "s_min": 22, "s_max": 95, "v_min": 215, "v_max": 255},
+]
+
+
+def _collect_corner_candidates(
+    image_bgr: np.ndarray,
+    hsv: np.ndarray,
+    slices: dict[str, tuple[slice, slice, tuple[int, int]]],
+    corners: list[str],
+    ranges: list[dict[str, int]],
+    combined_mask: Optional[np.ndarray] = None,
+) -> list[Candidate]:
+    candidates: list[Candidate] = []
+    for corner in corners:
+        if corner not in slices:
+            continue
+        yslc, xslc, offset = slices[corner]
+        region = image_bgr[yslc, xslc]
+        view, rotation = _corner_view(image_bgr, corner, yslc, xslc)
+        view_hsv = cv2.cvtColor(view, cv2.COLOR_BGR2HSV) if rotation else hsv[yslc, xslc]
+        mask = build_mask_from_ranges(view_hsv, ranges)
+        if combined_mask is not None:
+            # Place a de-rotated mask into the combined debug mask.
+            if rotation == _ROT_CCW:
+                debug_mask = cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE)
+            elif rotation == _ROT_CW:
+                debug_mask = cv2.rotate(mask, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            else:
+                debug_mask = mask
+            combined_mask[yslc, xslc] = cv2.bitwise_or(combined_mask[yslc, xslc], debug_mask)
+        # Use full-image dimensions for plausibility bounds; the bbox itself is
+        # still in (possibly rotated) view coordinates until mapped below.
+        cand = _candidate_from_mask(mask, corner, (0, 0), image_bgr.shape)
+        if cand:
+            view_h, view_w = view.shape[:2]
+            vx, vy, vw, vh = cand.bbox
+            vx = max(0, min(vx, view_w - 1))
+            vy = max(0, min(vy, view_h - 1))
+            vw = max(1, min(vw, view_w - vx))
+            vh = max(1, min(vh, view_h - vy))
+            view_bbox = (int(vx), int(vy), int(vw), int(vh))
+            cand.bbox = _view_bbox_to_image(view_bbox, region.shape[:2], rotation, offset)
+            cand.details["view_bbox"] = view_bbox
+            cand.details["rotation"] = rotation
+            cand.details["region_shape"] = list(region.shape[:2])
+            cand.details["region_offset"] = list(offset)
+            candidates.append(cand)
+    return candidates
+
+
+def _select_best_candidate(candidates: list[Candidate]) -> tuple[Optional[Candidate], float, Optional[DetectionResult]]:
+    """Pick the best plausible candidate, or explain why none was accepted."""
+    if not candidates:
+        return None, 0.0, DetectionResult(found=False, method="hsv_geometry", notes=["no plausible stamp candidate found by HSV+geometry"])
+    # prefer row-like plausible candidates, then score
+    candidates.sort(key=lambda c: (1 if c.row_like else 0, c.component_count >= 3, c.score), reverse=True)
+    best = candidates[0]
+    # implausibility guards (avoid false positives on colored non-stamp regions)
+    if not best.row_like and best.component_count < 4:
+        return None, 0.0, DetectionResult(found=False, method="hsv_geometry", corner=best.corner, bbox=best.bbox,
+                                           notes=["HSV candidate not row-like/plausible"], confidence=0.0)
+    if best.pixel_count < 80:
+        return None, 0.0, DetectionResult(found=False, method="hsv_geometry", corner=best.corner, bbox=best.bbox,
+                                           notes=["HSV candidate too small"], confidence=0.0)
+
+    conf = min(1.0, 0.15 + 0.85 * (min(best.score, 60000.0) / 60000.0))
+    if not best.row_like:
+        conf *= 0.5
+    if best.component_count < 3:
+        conf *= 0.6
+    # Final acceptance threshold: prefer returning no detection over weak false positives.
+    # Fallback detector (if available/configured) can be tried by caller when confidence is low.
+    if conf < 0.35:
+        return None, conf, DetectionResult(
+            found=False, method="hsv_geometry", corner=best.corner, bbox=best.bbox, confidence=conf,
+            notes=["HSV candidate rejected as low-confidence", f"components={best.component_count}",
+                   f"pixels={best.pixel_count}", f"row_like={best.row_like}"],
+        )
+    return best, conf, None
+
+
 def detect_stamp_hsv(image_bgr: np.ndarray, cal: dict[str, Any], debug_dir: Optional[Path] = None, debug_name: Optional[str] = None) -> tuple[DetectionResult, Optional[np.ndarray]]:
     h, w = image_bgr.shape[:2]
     hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
@@ -339,20 +524,10 @@ def detect_stamp_hsv(image_bgr: np.ndarray, cal: dict[str, Any], debug_dir: Opti
     x_frac = min(0.5, max(0.2, x_frac * 1.15))
     y_frac = min(0.5, max(0.2, y_frac * 1.15))
 
-    enabled = {c["name"] for c in cal.get("corner_regions", []) if c.get("enabled", True)} or set(CORNER_NAMES_DEFAULT := ("top_left","top_right","bottom_left","bottom_right"))
     slices = _corner_slices(h, w, y_frac, x_frac)
-    candidates: list[Candidate] = []
+    allowed_corners = expected_stamp_corners(h, w, cal)
     combined_mask = np.zeros((h, w), dtype=np.uint8)
-    for corner, (yslc, xslc, offset) in slices.items():
-        if corner not in enabled:
-            continue
-        region_hsv = hsv[yslc, xslc]
-        mask = build_mask_from_ranges(region_hsv, ranges)
-        # place into combined for debug
-        combined_mask[yslc, xslc] = cv2.bitwise_or(combined_mask[yslc, xslc], mask)
-        cand = _candidate_from_mask(mask, corner, offset, image_bgr.shape)
-        if cand:
-            candidates.append(cand)
+    candidates = _collect_corner_candidates(image_bgr, hsv, slices, allowed_corners, ranges, combined_mask)
 
     if debug_dir and debug_name:
         try:
@@ -361,37 +536,50 @@ def detect_stamp_hsv(image_bgr: np.ndarray, cal: dict[str, Any], debug_dir: Opti
         except Exception:
             pass
 
-    if not candidates:
-        return DetectionResult(found=False, method="hsv_geometry", notes=["no plausible stamp candidate found by HSV+geometry"]), None
+    best, conf, rejection = _select_best_candidate(candidates)
+    fallback_used = False
+    if best is None:
+        # Retry only the expected corners with the faint/overexposed stamp ranges.
+        faint = _collect_corner_candidates(image_bgr, hsv, slices, allowed_corners, FAINT_STAMP_HSV_RANGES)
+        faint_best, faint_conf, _ = _select_best_candidate(faint)
+        if faint_best is not None:
+            best, conf, rejection, fallback_used = faint_best, faint_conf, None, True
+    if best is None:
+        assert rejection is not None
+        rejection.notes = list(rejection.notes or []) + [
+            f"orientation={'portrait' if h > w else 'landscape'}",
+            f"searched_corners={','.join(allowed_corners)}",
+        ]
+        return rejection, None
 
-    # prefer row-like plausible candidates, then score
-    candidates.sort(key=lambda c: (1 if c.row_like else 0, c.component_count >= 3, c.score), reverse=True)
-    best = candidates[0]
-    # implausibility guards (avoid false positives on colored non-stamp regions)
-    if not best.row_like and best.component_count < 4:
-        return DetectionResult(found=False, method="hsv_geometry", notes=["HSV candidate not row-like/plausible"], confidence=0.0), None
-    if best.pixel_count < 80:
-        return DetectionResult(found=False, method="hsv_geometry", notes=["HSV candidate too small"], confidence=0.0), None
-
-    conf = min(1.0, 0.15 + 0.85 * (min(best.score, 60000.0) / 60000.0))
-    if not best.row_like:
-        conf *= 0.5
-    if best.component_count < 3:
-        conf *= 0.6
-    # Final acceptance threshold: prefer returning no detection over weak false positives.
-    # Fallback detector (if available/configured) can be tried by caller when confidence is low.
-    if conf < 0.35:
-        return DetectionResult(found=False, method="hsv_geometry", corner=best.corner, bbox=best.bbox,
-                               confidence=conf, notes=["HSV candidate rejected as low-confidence", f"components={best.component_count}", f"pixels={best.pixel_count}", f"row_like={best.row_like}"]), None
-
+    view_bbox = best.details.get("view_bbox")
+    rotation = int(best.details.get("rotation", 0) or 0)
     x, y, bw, bh = best.bbox
-    crop = image_bgr[y:y+bh, x:x+bw].copy() if bw > 0 and bh > 0 else None
+    crop = None
+    if view_bbox:
+        yslc, xslc, _ = slices[best.corner]
+        view, _ = _corner_view(image_bgr, best.corner, yslc, xslc)
+        vx, vy, vw, vh = view_bbox
+        if vw > 0 and vh > 0:
+            crop = view[vy:vy+vh, vx:vx+vw].copy()
+    elif bw > 0 and bh > 0:
+        crop = image_bgr[y:y+bh, x:x+bw].copy()
     if debug_dir and debug_name and crop is not None:
         try:
             cv2.imwrite(str(debug_dir / f"{debug_name}.crop.png"), crop)
         except Exception:
             pass
-    notes = [f"components={best.component_count}", f"pixels={best.pixel_count}", f"row_like={best.row_like}"]
+    notes = [
+        f"components={best.component_count}",
+        f"pixels={best.pixel_count}",
+        f"row_like={best.row_like}",
+        f"orientation={'portrait' if h > w else 'landscape'}",
+        f"searched_corners={','.join(allowed_corners)}",
+    ]
+    if rotation:
+        notes.append(f"crop_rotated_upright={'ccw' if rotation == _ROT_CCW else 'cw'}")
+    if fallback_used:
+        notes.append("faint_stamp_fallback_ranges")
     return DetectionResult(found=True, method="hsv_geometry", corner=best.corner, bbox=best.bbox, confidence=conf, notes=notes), crop
 
 
@@ -474,6 +662,7 @@ def evaluate_detection(photo_dir: Path, calibration_path: str | Path = CALIBRATI
     counts = {"found": 0, "not_found": 0}
     method_counts: dict[str, int] = {}
     corner_counts: dict[str, int] = {}
+    corner_matches = {"found_with_corner": 0, "expected_corner": 0, "unexpected_corner": 0}
     no_stamp_cases = {"total": 0, "correct_no_detection": 0}
     for path in images:
         img = cv2.imread(str(path), cv2.IMREAD_COLOR)
@@ -482,9 +671,17 @@ def evaluate_detection(photo_dir: Path, calibration_path: str | Path = CALIBRATI
             continue
         name = path.stem if debug_dir else path.stem
         result, _ = detect_stamp(img, cal=cal, fallback=fallback, debug_dir=debug_dir, debug_name=name)
+        expected_corners = expected_stamp_corners(img.shape[0], img.shape[1], cal)
+        corner_ok: Optional[bool] = None
         method_counts[result.method] = method_counts.get(result.method, 0) + 1
         if result.found:
             counts["found"] += 1
+            corner_matches["found_with_corner"] += 1
+            corner_ok = result.corner in expected_corners if result.corner else False
+            if corner_ok:
+                corner_matches["expected_corner"] += 1
+            else:
+                corner_matches["unexpected_corner"] += 1
             if result.corner:
                 corner_counts[result.corner] = corner_counts.get(result.corner, 0) + 1
         else:
@@ -503,6 +700,8 @@ def evaluate_detection(photo_dir: Path, calibration_path: str | Path = CALIBRATI
             "corner": result.corner,
             "bbox": result.bbox,
             "confidence": result.confidence,
+            "expected_corners": expected_corners,
+            "corner_ok": corner_ok,
             "notes": result.notes,
             "gt_status": gt_status,
             "gt_no_stamp": gt_no_stamp,
@@ -519,6 +718,7 @@ def evaluate_detection(photo_dir: Path, calibration_path: str | Path = CALIBRATI
         "counts": counts,
         "method_counts": method_counts,
         "corner_counts": corner_counts,
+        "corner_matches": corner_matches,
         "fallback_requested": use_fallback,
         "fallback_available": fallback_available,
         "no_stamp_cases": no_stamp_cases,
@@ -534,6 +734,9 @@ def print_detection_eval(summary: dict[str, Any]) -> None:
     print(f"  Found: {c.get('found', 0)}  Not found: {c.get('not_found', 0)}")
     print(f"  Methods: {summary.get('method_counts', {})}")
     print(f"  Corners: {summary.get('corner_counts', {})}")
+    cm = summary.get('corner_matches', {})
+    if cm:
+        print(f"  Expected corner: {cm.get('expected_corner', 0)}/{cm.get('found_with_corner', 0)} found stamps")
     fb_req = summary.get('fallback_requested')
     fb_av = summary.get('fallback_available')
     print(f"  Fallback requested={fb_req} available={fb_av}")
@@ -553,7 +756,10 @@ def print_detection_eval(summary: dict[str, Any]) -> None:
             mark = ' [GT no_stamp but detected]'
         if gt_no_stamp and not r.get('found'):
             mark = ' [GT no_stamp ok]'
-        print(f"  - {r['filename']}: found={r['found']} method={r['method']} corner={r.get('corner')} conf={conf_s} bbox={bbox_s}{mark}")
+        if r.get('corner_ok') is False:
+            mark += ' [unexpected corner]'
+        print(f"  - {r['filename']}: found={r['found']} method={r['method']} corner={r.get('corner')} "
+              f"expected={r.get('expected_corners')} conf={conf_s} bbox={bbox_s}{mark}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-19T22:14:57.250561+00:00",
+  "generated_at": "2026-11-19T22:21:42.533286+00:00",
   "photo_dir": "samples",
   "measurement_method": {
     "description": "HSV red/orange thresholding in four corner regions with connected-component row heuristics.",
@@ -142,11 +142,26 @@
     "note": "Heuristic from calibration masks; confirm during glyph inspection (samples may contain multiple camera fonts)."
   },
   "orientation": {
-    "check_all_four_corners": true,
+    "check_all_four_corners": false,
+    "stamp_corners_by_orientation": {
+      "landscape": [
+        "bottom_right"
+      ],
+      "portrait": [
+        "bottom_left",
+        "top_right"
+      ],
+      "square": [
+        "bottom_right",
+        "bottom_left",
+        "top_right",
+        "top_left"
+      ]
+    },
     "exif_orientation_observed": {
       "none": 20
     },
-    "note": "No EXIF orientation tags observed in sampled files; detector should still check all four corners for rotated scans."
+    "note": "Landscape stamps are bottom-right. Portrait frames are rotated landscape frames, so stamps land bottom-left or top-right; the detector checks only the corners for the frame orientation and rotates portrait crops upright."
   },
   "per_image": [
     {

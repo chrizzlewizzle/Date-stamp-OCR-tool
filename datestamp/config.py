@@ -17,6 +17,14 @@ NEEDS_REVIEW_MIN_OVERALL_SCORE = 0.60
 PLAUSIBLE_YEAR_MIN = 1970
 PLAUSIBLE_YEAR_MAX_FUTURE_YEARS = 0  # not in future relative to scan/file context
 
+# Analog date-stamp corner policy by frame orientation. Landscape frames keep
+# the stamp at bottom-right; portrait frames are rotated landscape frames, so
+# the stamp appears at bottom-left (rotated clockwise) or top-right (rotated
+# counter-clockwise).
+LANDSCAPE_STAMP_CORNERS = ("bottom_right",)
+PORTRAIT_STAMP_CORNERS = ("bottom_left", "top_right")
+ALL_STAMP_CORNERS = ("bottom_right", "bottom_left", "top_right", "top_left")
+
 # File/discovery defaults
 SUPPORTED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp", ".webp"}
 DEFAULT_OUTPUT_DIRNAME = "results"

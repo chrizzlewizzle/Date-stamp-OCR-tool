@@ -119,9 +119,10 @@ README.md
    - Restrict to plausible corner regions; find connected components; group into digit-row candidates by alignment/size/spacing.
    - Return bounding box/rotated crop + mask/confidence signals + debug artifacts (optional save under output/debug for reviewability).
    - *Deliverable:* primary path in `detect.py`.
-2. **Four-corner / orientation handling**
-   - Check all four corners (and/or rotate candidates) to handle rotated scans; respect EXIF orientation observations from calibration.
-   - *Deliverable:* deterministic search order and notes in result.
+2. **Orientation-aware corner handling**
+   - Landscape frames: search bottom-right only. Portrait frames (rotated landscape frames): search bottom-left and top-right, rotate the region upright before analysis, and return an upright crop.
+   - Nearly square frames: fall back to all four corners. Respect calibration corner overrides and EXIF orientation observations.
+   - *Deliverable:* deterministic search order, upright crop for portrait stamps, and notes in result.
 3. **Fallback detector hook (YOLO/ONNX) — interface-first**
    - Define fallback trigger: mask finds nothing or implausible result (thresholds configurable).
    - Implement adapter boundary: `FallbackDetector` interface so primary flow works even if model unavailable in-session.
